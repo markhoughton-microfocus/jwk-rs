@@ -8,12 +8,22 @@ fn base64_config() -> base64::Config {
     base64::Config::new(base64::CharacterSet::UrlSafe, false /* pad */)
 }
 
+fn base64_decode_config(b64: &[u8]) -> base64::Config {
+    // Try to guess the correct character set.
+    if b64.contains(&('/' as u8)) {
+        base64::STANDARD
+    } else {
+        base64::URL_SAFE
+    }
+}
+
 pub(crate) fn base64_encode(bytes: impl AsRef<[u8]>) -> String {
     base64::encode_config(bytes, base64_config())
 }
 
 fn base64_decode(b64: impl AsRef<[u8]>) -> Result<Vec<u8>, base64::DecodeError> {
-    base64::decode_config(b64, base64_config())
+    let config = base64_decode_config(b64.as_ref());
+    base64::decode_config(b64, config)
 }
 
 pub(crate) mod serde_base64 {
